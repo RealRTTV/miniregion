@@ -1,0 +1,34 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "ca.rttv",
+		"id": "miniregion",
+		"version": "${version}",
+		"metadata": {
+			"name": "MiniRegion",
+			"description": "Shrinks region files to a tiny size by using a new mcz format",
+			"contributors": {
+				"rsv": "Owner"
+			},
+			"contact": {
+				"homepage": "https://rttv.ca/",
+				"issues": "https://github.com/RealRTTV/miniregion/issues",
+				"sources": "https://github.com/RealRTTV/miniregion"
+			},
+			"icon": "assets/miniregion/icon.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=0.19.1"
+			},
+			{
+				"id": "minecraft",
+				"versions": ">=1.20"
+			}
+		]
+	},
+	"mixin": "miniregion.mixins.json"
+}

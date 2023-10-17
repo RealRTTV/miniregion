@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ca.rttv.miniregion.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ThreadedChunkManagerMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
