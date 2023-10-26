@@ -1,6 +1,5 @@
 package ca.rttv.miniregion.chunk;
 
-import ca.rttv.miniregion.ChunkDeserializer;
 import ca.rttv.miniregion.ChunkSerializer;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.Block;
@@ -16,7 +15,7 @@ import net.minecraft.world.gen.GenerationStep;
 import java.util.Optional;
 import java.util.Set;
 
-public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
+public class spec_3578 implements ChunkSerializer {
 	@Override
 	public PacketByteBuf toBuf(NbtCompound compound) {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer(1024));
@@ -39,7 +38,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 		writeTicking(buf, compound);
 		writePostProcessing(buf, compound);
 		writeHeightmaps(buf, compound);
-		// todo, is lazy
+		// todo, fix this, it's destroying the compression quality
 		buf.writeNbt(compound.get("structures"));
 
 		return buf;
@@ -335,7 +334,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 						tick.putInt("z", pos.getZ());
 						tick.putInt("t", buf.readVarInt());
 						tick.putInt("p", buf.readVarInt());
-						tick.putString("i", ChunkDeserializer.readIdentifier(buf).toString());
+						tick.putString("i", ChunkSerializer.readIdentifier(buf).toString());
 						neighbourBlockTicks.add(tick);
 					}
 					upgradeData.put("neighbor_block_ticks", neighbourBlockTicks);
@@ -353,7 +352,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 						tick.putInt("z", pos.getZ());
 						tick.putInt("t", buf.readVarInt());
 						tick.putInt("p", buf.readVarInt());
-						tick.putString("i", ChunkDeserializer.readIdentifier(buf).toString());
+						tick.putString("i", ChunkSerializer.readIdentifier(buf).toString());
 						neighbourFluidTicks.add(tick);
 					}
 					upgradeData.put("neighbor_fluid_ticks", neighbourFluidTicks);
@@ -406,7 +405,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 					}
 					NbtList biomesPalette = new NbtList();
 					for (int j = 0; j < biomesSize; j++) {
-						biomesPalette.add(NbtString.of(ChunkDeserializer.readIdentifier(buf).toString()));
+						biomesPalette.add(NbtString.of(ChunkSerializer.readIdentifier(buf).toString()));
 					}
 					biomes.put("palette", biomesPalette);
 					section.put("biomes", biomes);
@@ -456,7 +455,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 			tick.putInt("z", pos.getZ());
 			tick.putInt("t", buf.readVarInt());
 			tick.putInt("p", buf.readVarInt());
-			tick.putString("i", ChunkDeserializer.readIdentifier(buf).toString());
+			tick.putString("i", ChunkSerializer.readIdentifier(buf).toString());
 			blockTicks.add(tick);
 		}
 		NbtList fluidTicks = new NbtList();
@@ -469,7 +468,7 @@ public class spec_3578 implements ChunkSerializer, ChunkDeserializer {
 			tick.putInt("z", pos.getZ());
 			tick.putInt("t", buf.readVarInt());
 			tick.putInt("p", buf.readVarInt());
-			tick.putString("i", ChunkDeserializer.readIdentifier(buf).toString());
+			tick.putString("i", ChunkSerializer.readIdentifier(buf).toString());
 			fluidTicks.add(tick);
 		}
 		compound.put("block_ticks", blockTicks);

@@ -36,7 +36,7 @@ abstract class RegionBasedStorageMixin {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytes));
 			buf.readByte();
 			buf.readVarInt();
-			new spec_3578().fromBuf(buf).scan(scanner);
+			new spec_3578().fromBuf(buf).scanAsRoot(scanner);
 		} else {
 			NbtIo.read(new DataInputStream(new ByteArrayInputStream(bytes)), scanner, NbtTagSizeTracker.method_53898());
 		}
