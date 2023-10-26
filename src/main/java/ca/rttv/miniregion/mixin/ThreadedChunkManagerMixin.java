@@ -8,6 +8,7 @@ import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
+import org.quiltmc.loader.api.QuiltLoader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +30,7 @@ abstract class ThreadedChunkManagerMixin {
 
 	@Inject(method = "save(Lnet/minecraft/world/chunk/Chunk;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedChunkManager;setNbt(Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/nbt/NbtCompound;)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
 	private void save(Chunk chunk, CallbackInfoReturnable<Boolean> cir, ChunkPos chunkPos, ChunkStatus chunkStatus, NbtCompound nbt) {
-		if (!nbt.contains("Status")) {
+		if (!nbt.contains("Status") || !QuiltLoader.isDevelopmentEnvironment()) {
 			return;
 		}
 
