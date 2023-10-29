@@ -7,10 +7,20 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.structure.piece.StructurePieceType;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.collection.IdList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.gen.GenerationStep;
+import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.gen.structure.BuiltInStructures;
 
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +30,6 @@ public class spec_3578 implements ChunkSerializer {
 	public PacketByteBuf toBuf(NbtCompound compound) {
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer(1024));
 
-		buf.writeByte(0x6D);
 		buf.writeVarInt(3578);
 		buf.writeVarInt(compound.getInt("xPos"));
 		buf.writeVarInt(compound.getInt("yPos"));
@@ -38,8 +47,7 @@ public class spec_3578 implements ChunkSerializer {
 		writeTicking(buf, compound);
 		writePostProcessing(buf, compound);
 		writeHeightmaps(buf, compound);
-		// todo, fix this, it's destroying the compression quality
-		buf.writeNbt(compound.get("structures"));
+		writeStructures(buf, compound);
 
 		return buf;
 	}
@@ -162,8 +170,7 @@ public class spec_3578 implements ChunkSerializer {
 					buf.writeLongArray(biomes.getLongArray("data"));
 				}
 				for (NbtElement e2 : biomePalette) {
-					NbtString biome = (NbtString) e2;
-					ChunkSerializer.writeIdentifier(new Identifier(biome.asString()), buf);
+					buf.writeVarInt(getBiomesIdList().getRawId(RegistryKey.of(RegistryKeys.BIOME, new Identifier(e2.asString()))));
 				}
 			} else {
 				buf.writeBoolean(false);
@@ -239,11 +246,229 @@ public class spec_3578 implements ChunkSerializer {
 		}
 	}
 
+	private static final IdList<RegistryKey<StructureFeature>> STRUCTURE_FEATURES = Util.make(new IdList<>(), list -> {
+		list.add(BuiltInStructures.PILLAGER_OUTPOST);
+		list.add(BuiltInStructures.MINESHAFT);
+		list.add(BuiltInStructures.MINESHAFT_MESA);
+		list.add(BuiltInStructures.MANSION);
+		list.add(BuiltInStructures.JUNGLE_PYRAMID);
+		list.add(BuiltInStructures.DESERT_PYRAMID);
+		list.add(BuiltInStructures.IGLOO);
+		list.add(BuiltInStructures.SHIPWRECK);
+		list.add(BuiltInStructures.SHIPWRECK_BEACHED);
+		list.add(BuiltInStructures.SWAMP_HUT);
+		list.add(BuiltInStructures.STRONGHOLD);
+		list.add(BuiltInStructures.MONUMENT);
+		list.add(BuiltInStructures.OCEAN_RUIN_COLD);
+		list.add(BuiltInStructures.OCEAN_RUIN_WARM);
+		list.add(BuiltInStructures.FORTRESS);
+		list.add(BuiltInStructures.NETHER_FOSSIL);
+		list.add(BuiltInStructures.END_CITY);
+		list.add(BuiltInStructures.BURIED_TREASURE);
+		list.add(BuiltInStructures.BASTION_REMNANT);
+		list.add(BuiltInStructures.VILLAGE_PLAINS);
+		list.add(BuiltInStructures.VILLAGE_DESERT);
+		list.add(BuiltInStructures.VILLAGE_SAVANNA);
+		list.add(BuiltInStructures.VILLAGE_SNOWY);
+		list.add(BuiltInStructures.VILLAGE_TAIGA);
+		list.add(BuiltInStructures.RUINED_PORTAL);
+		list.add(BuiltInStructures.RUINED_PORTAL_DESERT);
+		list.add(BuiltInStructures.RUINED_PORTAL_JUNGLE);
+		list.add(BuiltInStructures.RUINED_PORTAL_SWAMP);
+		list.add(BuiltInStructures.RUINED_PORTAL_MOUNTAIN);
+		list.add(BuiltInStructures.RUINED_PORTAL_OCEAN);
+		list.add(BuiltInStructures.RUINED_PORTAL_NETHER);
+		list.add(BuiltInStructures.ANCIENT_CITY);
+		list.add(BuiltInStructures.TRAIL_RUINS);
+	});
+
+	protected IdList<RegistryKey<StructureFeature>> getStructureFeatureIdList() {
+		return STRUCTURE_FEATURES;
+	}
+
+	private static final IdList<StructurePieceType> STRUCTURE_PIECE_TYPES = Util.make(new IdList<>(), list -> {
+		list.add(StructurePieceType.MINESHAFT_CORRIDOR);
+		list.add(StructurePieceType.MINESHAFT_CROSSING);
+		list.add(StructurePieceType.MINESHAFT_ROOM);
+		list.add(StructurePieceType.MINESHAFT_STAIRS);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE_CROSSING);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE_END);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_STAIRS);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_BALCONY);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_EXIT);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_CROSSING);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_LEFT_TURN);
+		list.add(StructurePieceType.NETHER_FORTRESS_SMALL_CORRIDOR);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_RIGHT_TURN);
+		list.add(StructurePieceType.NETHER_FORTRESS_CORRIDOR_NETHER_WARTS_ROOM);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE_PLATFORM);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE_SMALL_CROSSING);
+		list.add(StructurePieceType.NETHER_FORTRESS_BRIDGE_STAIRS);
+		list.add(StructurePieceType.NETHER_FORTRESS_START);
+		list.add(StructurePieceType.STRONGHOLD_CHEST_CORRIDOR);
+		list.add(StructurePieceType.STRONGHOLD_SMALL_CORRIDOR);
+		list.add(StructurePieceType.STRONGHOLD_FIVE_WAY_CROSSING);
+		list.add(StructurePieceType.STRONGHOLD_LEFT_TURN);
+		list.add(StructurePieceType.STRONGHOLD_LIBRARY);
+		list.add(StructurePieceType.STRONGHOLD_PORTAL_ROOM);
+		list.add(StructurePieceType.STRONGHOLD_PRISON_HALL);
+		list.add(StructurePieceType.STRONGHOLD_RIGHT_TURN);
+		list.add(StructurePieceType.STRONGHOLD_SQUARE_ROOM);
+		list.add(StructurePieceType.STRONGHOLD_SPIRAL_STAIRCASE);
+		list.add(StructurePieceType.STRONGHOLD_START);
+		list.add(StructurePieceType.STRONGHOLD_CORRIDOR);
+		list.add(StructurePieceType.STRONGHOLD_STAIRS);
+		list.add(StructurePieceType.JUNGLE_TEMPLE);
+		list.add(StructurePieceType.OCEAN_TEMPLE);
+		list.add(StructurePieceType.IGLOO);
+		list.add(StructurePieceType.RUINED_PORTAL);
+		list.add(StructurePieceType.SWAMP_HUT);
+		list.add(StructurePieceType.DESERT_TEMPLE);
+		list.add(StructurePieceType.OCEAN_MONUMENT_BASE);
+		list.add(StructurePieceType.OCEAN_MONUMENT_CORE_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_DOUBLE_X_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_DOUBLE_X_Y_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_DOUBLE_Y_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_DOUBLE_Y_Z_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_DOUBLE_Z_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_ENTRY_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_PENTHOUSE);
+		list.add(StructurePieceType.OCEAN_MONUMENT_SIMPLE_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_SIMPLE_TOP_ROOM);
+		list.add(StructurePieceType.OCEAN_MONUMENT_WING_ROOM);
+		list.add(StructurePieceType.END_CITY);
+		list.add(StructurePieceType.WOODLAND_MANSION);
+		list.add(StructurePieceType.BURIED_TREASURE);
+		list.add(StructurePieceType.SHIPWRECK);
+		list.add(StructurePieceType.NETHER_FOSSIL);
+		list.add(StructurePieceType.JIGSAW);
+	});
+
+	protected static IdList<StructurePieceType> getStructurePieceTypeIdList() {
+		return STRUCTURE_PIECE_TYPES;
+	}
+
+	private static final IdList<RegistryKey<Biome>> BIOMES = Util.make(new IdList<>(), list -> {
+		list.add(Biomes.THE_VOID);
+		list.add(Biomes.PLAINS);
+		list.add(Biomes.SUNFLOWER_PLAINS);
+		list.add(Biomes.SNOWY_PLAINS);
+		list.add(Biomes.ICE_SPIKES);
+		list.add(Biomes.DESERT);
+		list.add(Biomes.SWAMP);
+		list.add(Biomes.MANGROVE_SWAMP);
+		list.add(Biomes.FOREST);
+		list.add(Biomes.FLOWER_FOREST);
+		list.add(Biomes.BIRCH_FOREST);
+		list.add(Biomes.DARK_FOREST);
+		list.add(Biomes.OLD_GROWTH_BIRCH_FOREST);
+		list.add(Biomes.OLD_GROWTH_PINE_TAIGA);
+		list.add(Biomes.OLD_GROWTH_SPRUCE_TAIGA);
+		list.add(Biomes.TAIGA);
+		list.add(Biomes.SNOWY_TAIGA);
+		list.add(Biomes.SAVANNA);
+		list.add(Biomes.SAVANNA_PLATEAU);
+		list.add(Biomes.WINDSWEPT_HILLS);
+		list.add(Biomes.WINDSWEPT_GRAVELLY_HILLS);
+		list.add(Biomes.WINDSWEPT_FOREST);
+		list.add(Biomes.WINDSWEPT_SAVANNA);
+		list.add(Biomes.JUNGLE);
+		list.add(Biomes.SPARSE_JUNGLE);
+		list.add(Biomes.BAMBOO_JUNGLE);
+		list.add(Biomes.BADLANDS);
+		list.add(Biomes.ERODED_BADLANDS);
+		list.add(Biomes.WOODED_BADLANDS);
+		list.add(Biomes.MEADOW);
+		list.add(Biomes.CHERRY_GROVE);
+		list.add(Biomes.GROVE);
+		list.add(Biomes.SNOWY_SLOPES);
+		list.add(Biomes.FROZEN_PEAKS);
+		list.add(Biomes.JAGGED_PEAKS);
+		list.add(Biomes.STONY_PEAKS);
+		list.add(Biomes.RIVER);
+		list.add(Biomes.FROZEN_RIVER);
+		list.add(Biomes.BEACH);
+		list.add(Biomes.SNOWY_BEACH);
+		list.add(Biomes.STONY_SHORE);
+		list.add(Biomes.WARM_OCEAN);
+		list.add(Biomes.LUKEWARM_OCEAN);
+		list.add(Biomes.DEEP_LUKEWARM_OCEAN);
+		list.add(Biomes.OCEAN);
+		list.add(Biomes.DEEP_OCEAN);
+		list.add(Biomes.COLD_OCEAN);
+		list.add(Biomes.DEEP_COLD_OCEAN);
+		list.add(Biomes.FROZEN_OCEAN);
+		list.add(Biomes.DEEP_FROZEN_OCEAN);
+		list.add(Biomes.MUSHROOM_FIELDS);
+		list.add(Biomes.DRIPSTONE_CAVES);
+		list.add(Biomes.LUSH_CAVES);
+		list.add(Biomes.DEEP_DARK);
+		list.add(Biomes.NETHER_WASTES);
+		list.add(Biomes.WARPED_FOREST);
+		list.add(Biomes.CRIMSON_FOREST);
+		list.add(Biomes.SOUL_SAND_VALLEY);
+		list.add(Biomes.BASALT_DELTAS);
+		list.add(Biomes.THE_END);
+		list.add(Biomes.END_HIGHLANDS);
+		list.add(Biomes.END_MIDLANDS);
+		list.add(Biomes.SMALL_END_ISLANDS);
+		list.add(Biomes.END_BARRENS);
+	});
+
+	protected static IdList<RegistryKey<Biome>> getBiomesIdList() {
+		return BIOMES;
+	}
+
+	protected void writeStructures(PacketByteBuf buf, NbtCompound compound) {
+		NbtCompound structures = compound.getCompound("structures");
+		NbtCompound starts = structures.getCompound("starts");
+		buf.writeVarInt(starts.getSize());
+		for (String key : starts.getKeys()) {
+			buf.writeVarInt(getStructureFeatureIdList().getRawId(RegistryKey.of(RegistryKeys.STRUCTURE_FEATURE, new Identifier(key))));
+			NbtCompound value = starts.getCompound(key);
+			String structure = value.getString("id");
+			if (structure.equals("INVALID")) {
+				buf.writeVarInt(0);
+			} else {
+				NbtList children = value.getList("Children", NbtElement.COMPOUND_TYPE);
+				buf.writeVarInt(children.size());
+				for (NbtElement c : children) {
+					NbtCompound child = (NbtCompound) c;
+					buf.writeVarInt(getStructurePieceTypeIdList().getRawId(Registries.STRUCTURE_PIECE_TYPE.get(new Identifier(child.getString("id")))));
+					for (int i : child.getIntArray("BB")) {
+						buf.writeVarInt(i);
+					}
+					buf.writeVarInt(child.getInt("O"));
+					buf.writeVarInt(child.getInt("GD"));
+					child.remove("id");
+					child.remove("BB");
+					child.remove("O");
+					child.remove("GD");
+					// ugh, thanks mojang, making a RawOps would've been so, so much better, but no, of course not.
+					// if i work at mojang, the first thing im doing is making encoding use RawOps, i stg it really needs to like, please.
+					// the actual mc can use nbt, but in cases where it translates from objects and stuff to encoding in worlds, it's using RawOps.
+					// like, you can see the size go down, that's why this mod exists.
+					buf.writeNbt(child);
+				}
+				buf.writeVarInt(value.getInt("references"));
+			}
+		}
+		NbtCompound references = structures.getCompound("References");
+		buf.writeVarInt(references.getSize());
+		for (String key : references.getKeys()) {
+			long[] longs = references.getLongArray(key);
+			buf.writeVarInt(getStructureFeatureIdList().getRawId(RegistryKey.of(RegistryKeys.STRUCTURE_FEATURE, new Identifier(key))));
+			buf.writeLongArray(longs);
+		}
+	}
+
 	@Override
 	public NbtCompound fromBuf(PacketByteBuf buf) {
 		NbtCompound compound = new NbtCompound();
 
 		compound.putInt("DataVersion", 3578);
+		compound.putBoolean("FullSerialization", true);
 		compound.putInt("xPos", buf.readVarInt());
 		compound.putInt("yPos", buf.readVarInt());
 		compound.putInt("zPos", buf.readVarInt());
@@ -261,8 +486,7 @@ public class spec_3578 implements ChunkSerializer {
 		readTicking(buf, compound);
 		readPostProcessing(buf, compound);
 		readHeightmaps(buf, compound, status);
-		// todo, is lazy
-		compound.put("structures", buf.readNbt());
+		readStructures(buf, compound, new ChunkPos(compound.getInt("xPos"), compound.getInt("zPos")));
 
 		return compound;
 	}
@@ -405,7 +629,7 @@ public class spec_3578 implements ChunkSerializer {
 					}
 					NbtList biomesPalette = new NbtList();
 					for (int j = 0; j < biomesSize; j++) {
-						biomesPalette.add(NbtString.of(ChunkSerializer.readIdentifier(buf).toString()));
+						biomesPalette.add(NbtString.of(getBiomesIdList().get(buf.readVarInt()).getValue().toString()));
 					}
 					biomes.put("palette", biomesPalette);
 					section.put("biomes", biomes);
@@ -503,5 +727,54 @@ public class spec_3578 implements ChunkSerializer {
 			}
 		}
 		compound.put("Heightmaps", heightmaps);
+	}
+
+	protected void readStructures(PacketByteBuf buf, NbtCompound compound, ChunkPos pos) {
+		NbtCompound structures = new NbtCompound();
+		NbtCompound starts = new NbtCompound();
+		int len = buf.readVarInt();
+		for (int i = 0; i < len; i++) {
+			String key = getStructureFeatureIdList().get(buf.readVarInt()).getValue().toString();
+			NbtCompound value = new NbtCompound();
+			int pieces = buf.readVarInt();
+			if (pieces > 0) {
+				value.putString("id", key);
+				value.putInt("ChunkX", pos.x);
+				value.putInt("ChunkZ", pos.z);
+				NbtList children = new NbtList();
+				for (int j = 0; j < pieces; j++) {
+					// this is done so raw ids aren't used between versions, which could cause problems.
+					String id = Registries.STRUCTURE_PIECE_TYPE.getId(getStructurePieceTypeIdList().get(buf.readVarInt())).toString();
+					int[] bb = new int[6];
+					for (int k = 0; k < 6; k++) {
+						bb[k] = buf.readVarInt();
+					}
+					int o = buf.readVarInt();
+					int gd = buf.readVarInt();
+					NbtCompound child = buf.readNbt();
+					child.putString("id", id);
+					child.putIntArray("BB", bb);
+					child.putInt("O", o);
+					child.putInt("GD", gd);
+					children.add(child);
+				}
+				value.put("Children", children);
+				value.putInt("references", buf.readVarInt());
+			} else {
+				value.putString("id", "INVALID");
+			}
+			starts.put(key, value);
+		}
+		structures.put("starts", starts);
+
+		NbtCompound references = new NbtCompound();
+		int ref = buf.readVarInt();
+		for (int i = 0; i < ref; i++) {
+			String key = getStructureFeatureIdList().get(buf.readVarInt()).getValue().toString();
+			long[] longs = buf.readLongArray();
+			references.putLongArray(key, longs);
+		}
+		structures.put("References", references);
+		compound.put("structures", structures);
 	}
 }

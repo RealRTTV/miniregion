@@ -4,11 +4,15 @@
   "package": "ca.rttv.miniregion.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ChunkSerializerMixin",
     "RegionBasedStorageMixin",
     "RegionFileMixin",
-    "ThreadedChunkManagerMixin"
+    "ThreadedChunkManagerMixin",
+    "WorldUpdaterMixin"
   ],
-  "client": [],
+  "client": [
+    "DebugHudMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
 	}

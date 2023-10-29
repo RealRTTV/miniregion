@@ -11,6 +11,7 @@ public interface ChunkSerializer {
 
 	NbtCompound fromBuf(PacketByteBuf buf);
 
+	@Deprecated
 	static void writeIdentifier(Identifier identifier, PacketByteBuf buf) {
 		if (identifier.getNamespace().equals("minecraft")) {
 			buf.writeBytes(identifier.getPath().getBytes(StandardCharsets.UTF_8));
@@ -20,6 +21,7 @@ public interface ChunkSerializer {
 		buf.writeByte(0);
 	}
 
+	@Deprecated
 	static Identifier readIdentifier(PacketByteBuf buf) {
 		var bytes = new byte[buf.bytesBefore((byte) 0)];
 		buf.readBytes(bytes);
